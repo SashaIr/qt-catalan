@@ -44,11 +44,9 @@ def q_analog {R : Type*} [Semiring R] (n : ℕ) (q : R) : R :=
 lemma q_analog_def {R : Type*} [Semiring R] (n : ℕ) (q : R) :
   q_analog n q = ∑ i ∈ Finset.range n, q ^ i := rfl
 
-theorem q_analog_eq_geom_sum {R : Type*} [DivisionRing R] (n : ℕ) (q : R) (h : q ≠ 1) :
-    q_analog n q = (1 - q ^ n) / (1 - q) := by
-  rw [ eq_comm, div_eq_iff ]
-  · simp only [q_analog_def, geom_sum_mul_neg]
-  · exact sub_ne_zero_of_ne h.symm
+theorem q_analog_eq_geom_sum {R : Type*} [DivisionRing R] (n : ℕ) (q : R) :
+    q_analog n q * (1 - q) = (1 - q ^ n) := by
+  simp only [q_analog_def, geom_sum_mul_neg]
 
 /-
 The q-analog of n when q=1 is equal to n.
@@ -125,6 +123,18 @@ lemma q_pochhammer_succ {R : Type*} [Ring R] (n : ℕ) (a q : R) :
     q_pochhammer (n + 1) a q = (1 - a * q ^ n) * q_pochhammer n a q := by
   rw [q_pochhammer]
 
+lemma q_pochhammer_eq_q_factorial {R : Type*} [DivisionRing R] (n : ℕ) (q : R) (hq : q ≠ 0) :
+    q_pochhammer n q q = (1 - q) ^ n * q_factorial n q := by
+  induction' n with n ih;
+  · simp [q_pochhammer, q_factorial]
+  · rw [q_pochhammer, q_factorial, ih]
+    -- rw [(by sorry : (1 - q) ^ (n + 1) * (q_analog (n + 1) q * q_factorial n q) = (1 - q) ^ n * (q_analog (n + 1) q * (1 - q) * q_factorial n q))]
+    -- rw [q_analog_eq_geom_sum, ← pow_succ', ← mul_assoc, ← mul_assoc]
+    -- suffices (1 - q ^ (n + 1)) * (1 - q) ^ n = (1 - q) ^ n * (1 - q ^ (n+ 1)) by rw [this]
+    -- rw [sub_mul, mul_sub]
+    -- simp only [one_mul, mul_one, sub_right_inj]
+    sorry
+
 /-
 The q-Pochhammer symbol can be expressed in terms of q-factorials as (q;q)_n = q^((n(n-1))/2) * [n]_q!.
 -/
@@ -148,18 +158,20 @@ lemma q_binomial_def {R : Type*} [DivisionRing R] (n k : ℕ) (q : R) :
 
 lemma q_binomial_eq {R : Type*} [DivisionRing R] (n k : ℕ) (q : R) :
     q_binomial n k q = (q_factorial n q) / ((q_factorial k q) * (q_factorial (n - k) q)) := by
-  induction' n with n ih generalizing k;
-  · cases k;
-    · simp [q_binomial_def, q_factorial]
-    · simp only [q_binomial_def, zero_tsub, zero_add, pow_one, q_factorial, q_analog_def, mul_one,
-      one_div, mul_inv_rev]
-      sorry
-  cases k;
-  · simp only [q_binomial_def, q_pochhammer_zero, tsub_zero, one_mul, q_factorial, q_analog_def]
-    sorry
-  · rw [q_binomial_def, q_factorial, q_factorial]
-    simp only [mul_assoc]
-    sorry
+  rw [q_binomial_def]
+  sorry
+  -- induction' n with n ih generalizing k;
+  -- · cases k;
+  --   · simp [q_binomial_def, q_factorial]
+  --   · simp only [q_binomial_def, zero_tsub, zero_add, pow_one, q_factorial, q_analog_def, mul_one,
+  --     one_div, mul_inv_rev]
+  --     sorry
+  -- cases k;
+  -- · simp only [q_binomial_def, q_pochhammer_zero, tsub_zero, one_mul, q_factorial, q_analog_def]
+  --   sorry
+  -- · rw [q_binomial_def, q_factorial, q_factorial]
+  --   simp only [mul_assoc]
+  --   sorry
 
 /-
 The q-Pascal's identity for q-binomial coefficients states that
@@ -168,4 +180,5 @@ q_binomial (n + 1) (k + 1) q = q_binomial n k q + q^(k + 1) * q_binomial n (k + 
 theorem q_Pascal {R : Type*} [DivisionRing R] (n k : ℕ) (h : k < n) (q : R) :
     q_binomial (n + 1) (k + 1) q = q_binomial n k q + q ^ (k + 1) * q_binomial n (k + 1) q := by
   simp only [q_binomial_def, Nat.reduceSubDiff, q_pochhammer_succ]
+
   sorry
