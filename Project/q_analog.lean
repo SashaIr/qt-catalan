@@ -138,7 +138,7 @@ The q-Pochhammer symbol can be expressed in terms of q-factorials as (q;q)_n = q
 --     ring
 
 /-
-The q-binomial coefficient is defined as [n]_q! / ([k]_q! * [n-k]_q!). In terms of q-Pochhammer symbols, it can be expressed as (q;q)_n / ((q;q)_k * (q;q)_{n-k}). We use the latter definition for its computational advantages.
+The q-binomial coefficient is defined as [n]_q! / ([k]_q! * [n-k]_q!). In terms of q-Pochhammer symbols, it can be expressed as (q^(n-k+1);q)_k / ((q;q)_k). We use the latter definition for its computational advantages.
 -/
 def q_binomial {R : Type*} [DivisionRing R] (n k : ℕ) (q : R) : R :=
   q_pochhammer k (q^(n-k+1)) q / (q_pochhammer k q q)
