@@ -30,3 +30,7 @@ def example₃ : DyckWord := example₂.nest
 #eval qtCatalan 0 ℕ 1 1
 #eval qtCatalan 1 ℕ 1 1
 #eval qtCatalan 2 ℕ 1 1
+
+#eval qtCatalanAlt 0 ℕ 1 1
+#eval qtCatalanAlt 1 ℕ 1 1
+#eval qtCatalanAlt 2 ℕ 1 1

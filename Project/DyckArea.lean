@@ -113,4 +113,13 @@ def bounce (p : DyckWord) : ℕ :=
 def qtCatalan (n : ℕ) (R : Type*) [Semiring R] (q t : R) : R :=
   ∑ w : {p : DyckWord // p.semilength = n}, q ^ w.1.dinv * t ^ w.1.area
 
+/-- Alternate form of the `q,t`-Catalan polynomial, summing `q^area * t^bounce`. -/
+def qtCatalanAlt (n : ℕ) (R : Type*) [Semiring R] (q t : R) : R :=
+  ∑ w : {p : DyckWord // p.semilength = n}, q ^ w.1.area * t ^ w.1.bounce
+
+/-- Placeholder theorem asserting the equality of the two `q,t`-Catalan formulations. -/
+theorem qtCatalan_eq_qtCatalanAlt (n : ℕ) (R : Type*) [Semiring R] (q t : R) :
+    qtCatalan n R q t = qtCatalanAlt n R q t := by
+  sorry
+
 end DyckWord
