@@ -81,7 +81,6 @@ The q-analog of n with parameter 1/q is equal to (1/q)^(n-1) times the q-analog 
 -/
 theorem q_analog_inv {R : Type*} [DivisionRing R] (n : ℕ) (q : R) (hq : q ≠ 0) :
     q_analog n (q⁻¹) = (q⁻¹) ^ (n - 1) * q_analog n q := by
-  unfold q_analog;
   induction n <;> simp [geom_sum_succ]
   cases ‹ℕ› <;> simp_all [Finset.sum_range_succ, pow_succ']
   simp [mul_add, ← mul_assoc, hq]
@@ -115,13 +114,13 @@ The q-Pochhammer symbol is 0 when n is 0.
 @[simp]
 lemma q_pochhammer_zero {R : Type*} [Ring R] (a q : R) : q_pochhammer 0 a q = 1 := by
   simp [q_pochhammer]
-
 /-
 The q-Pochhammer symbol satisfies the recurrence relation (a;q)_{n+1} = (1 - a q^n) * (a;q)_n.
 -/
 lemma q_pochhammer_succ {R : Type*} [Ring R] (n : ℕ) (a q : R) :
     q_pochhammer (n + 1) a q = (1 - a * q ^ n) * q_pochhammer n a q := by
   rw [q_pochhammer]
+
 
 lemma q_pochhammer_eq_q_factorial {R : Type*} [DivisionRing R] (n : ℕ) (q : R) (hq : q ≠ 0) :
     q_pochhammer n q q = (1 - q) ^ n * q_factorial n q := by
@@ -150,13 +149,13 @@ The q-Pochhammer symbol can be expressed in terms of q-factorials as (q;q)_n = q
 /-
 The q-binomial coefficient is defined as [n]_q! / ([k]_q! * [n-k]_q!). In terms of q-Pochhammer symbols, it can be expressed as (q^(n-k+1);q)_k / ((q;q)_k). We use the latter definition for its computational advantages.
 -/
-def q_binomial {R : Type*} [DivisionRing R] (n k : ℕ) (q : R) : R :=
+def q_binomial {R : Type*} [DivisionRing R] (n : ℤ) (k : ℕ) (q : R) : R :=
   q_pochhammer k (q^(n-k+1)) q / (q_pochhammer k q q)
 
-lemma q_binomial_def {R : Type*} [DivisionRing R] (n k : ℕ) (q : R) :
+lemma q_binomial_def {R : Type*} [DivisionRing R] (n : ℤ) (k : ℕ) (q : R) :
   q_binomial n k q = q_pochhammer k (q^(n-k+1)) q / (q_pochhammer k q q) := rfl
 
-lemma q_binomial_eq {R : Type*} [DivisionRing R] (n k : ℕ) (q : R) :
+lemma q_binomial_eq {R : Type*} [DivisionRing R] (n k : ℕ) (h : k ≤ n) (q : R) :
     q_binomial n k q = (q_factorial n q) / ((q_factorial k q) * (q_factorial (n - k) q)) := by
   rw [q_binomial_def]
   sorry
@@ -179,6 +178,33 @@ q_binomial (n + 1) (k + 1) q = q_binomial n k q + q^(k + 1) * q_binomial n (k + 
 -/
 theorem q_Pascal {R : Type*} [DivisionRing R] (n k : ℕ) (h : k < n) (q : R) :
     q_binomial (n + 1) (k + 1) q = q_binomial n k q + q ^ (k + 1) * q_binomial n (k + 1) q := by
-  simp only [q_binomial_def, Nat.reduceSubDiff, q_pochhammer_succ]
-
+  simp only [q_binomial_def, q_pochhammer_succ]
   sorry
+
+def inv {n : ℕ} (S : Finset (Fin n)) : ℕ :=
+  ∑ i ∈ S, { j : Fin n | j > i ∧ j ∉ S }.toFinset.card
+
+@[simp]
+lemma inv_empty {n : ℕ} : inv (∅ : Finset (Fin n)) = 0 := by
+  simp [inv]
+
+theorem sum_inv_eq_q_binomial {R : Type*} [DivisionRing R] (n k : ℕ) (q : R) (hq : q ≠ 0) :
+    ∑ (S : Finset (Fin n)) with (fun S => S.card = k) S,
+      q ^ inv S = q_binomial n k q := by
+  induction' n with n ih generalizing k
+  · simp only [Finset.univ_unique]
+    have : @default (Finset (Fin 0)) _ = ∅ := by rfl
+    rw [this, Finset.sum_filter, Finset.sum_singleton, Finset.card_empty]
+    split_ifs with hk
+    · rw [← hk, q_binomial_def]
+      simp only [inv_empty, pow_zero, CharP.cast_eq_zero, sub_self, zero_add, zpow_one,
+        q_pochhammer_zero, ne_eq, one_ne_zero, not_false_eq_true, div_self]
+    · rw [q_binomial_def]
+      cases k
+      · contradiction
+      · rw [q_pochhammer]
+        simp only [CharP.cast_eq_zero, Nat.cast_add, Nat.cast_one, zero_sub, neg_add_rev,
+          Int.reduceNeg, neg_add_cancel_comm, zpow_neg, zpow_natCast]
+        simp [hq]
+  · 
+    sorry
