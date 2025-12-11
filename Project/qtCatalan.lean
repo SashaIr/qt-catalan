@@ -1,4 +1,5 @@
 import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Data.Multiset.Basic
 
 namespace DyckWord
 
@@ -110,16 +111,21 @@ def bounce (p : DyckWord) : ℕ :=
 
 /-- The `q,t`-Catalan polynomial: sum over all Dyck words of semilength `n` of
 `q ^ dinv * t ^ area`. -/
-def qtCatalan (n : ℕ) (R : Type*) [Semiring R] (q t : R) : R :=
+def qtCatalan (n : ℕ) (R : Type*) [CommSemiring R] (q t : R) : R :=
   ∑ w : {p : DyckWord // p.semilength = n}, q ^ w.1.dinv * t ^ w.1.area
 
 /-- Alternate form of the `q,t`-Catalan polynomial, summing `q^area * t^bounce`. -/
-def qtCatalanAlt (n : ℕ) (R : Type*) [Semiring R] (q t : R) : R :=
+def qtCatalanAlt (n : ℕ) (R : Type*) [CommSemiring R] (q t : R) : R :=
   ∑ w : {p : DyckWord // p.semilength = n}, q ^ w.1.area * t ^ w.1.bounce
 
-/-- Placeholder theorem asserting the equality of the two `q,t`-Catalan formulations. -/
-theorem qtCatalan_eq_qtCatalanAlt (n : ℕ) (R : Type*) [Semiring R] (q t : R) :
+/-- Equality of the two `q,t`-Catalan formulations. -/
+theorem qtCatalan_eq_qtCatalanAlt (n : ℕ) (R : Type*) [CommSemiring R] (q t : R) :
     qtCatalan n R q t = qtCatalanAlt n R q t := by
+  sorry
+
+/-- Symmetry of the `q,t`-Catalan polynomial in `q` and `t`. -/
+theorem qtCatalan_symmetric (n : ℕ) (R : Type*) [CommSemiring R] (q t : R) :
+    qtCatalan n R q t = qtCatalan n R t q := by
   sorry
 
 end DyckWord
