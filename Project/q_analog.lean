@@ -8,6 +8,7 @@ import Mathlib.Algebra.Ring.GeomSum
 import Mathlib.Algebra.Ring.Regular
 import Mathlib.RingTheory.SimpleRing.Basic
 import Mathlib.Tactic
+import Project.FinInv
 
 /-
 The q-analog of a natural number n, denoted [n]_q, is the sum 1 + q + ... + q^(n-1).
@@ -79,13 +80,6 @@ The q-Pascal identity states that [n+1 choose k+1]_q = [n choose k]_q + q^(k+1) 
 theorem q_pascal {R : Type*} [Semiring R] (n k : ℕ) (q : R):
     q_binomial (n + 1) (k + 1) q = q_binomial n k q + q ^ (k + 1) * q_binomial n (k + 1) q := by
   rfl
-
-def inv {n : ℕ} (S : Finset (Fin n)) : ℕ :=
-  ∑ i ∈ S, { j : Fin n | j > i ∧ j ∉ S }.toFinset.card
-
-@[simp]
-lemma inv_empty {n : ℕ} : inv (∅ : Finset (Fin n)) = 0 := by
-  simp [inv]
 
 theorem sum_inv_eq_q_binomial {R : Type*} [Semiring R] (n k : ℕ) (q : R) (hq : q ≠ 0) :
     ∑ (S : Finset (Fin n)) with (fun S => S.card = k) S,
