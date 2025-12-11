@@ -1,4 +1,4 @@
-import Project.DyckArea
+import Project.qtCatalan
 
 open DyckWord
 

@@ -1,4 +1,5 @@
 import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Data.Multiset.Basic
 
 namespace DyckWord
 
