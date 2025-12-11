@@ -12,10 +12,9 @@ import Mathlib.Tactic
 /-
 The q-analog of a natural number n, denoted [n]_q, is the sum 1 + q + ... + q^(n-1).
 -/
-def q_analog {R : Type*} [Semiring R] (n : ℕ) (q : R) : R :=
-  match n with
-  | 0     => 0
-  | n + 1 => q_analog n q + q ^ n
+def q_analog {R : Type*} [Semiring R] : ℕ → R → R
+  | 0, _     => 0
+  | n + 1, q => q_analog n q + q ^ n
 
 @[simp]
 theorem q_analog_eq_geom_sum {R : Type*} [Ring R] (n : ℕ) (q : R) :
@@ -38,10 +37,9 @@ theorem q_analog_one {R : Type*} [Semiring R] (n : ℕ) : q_analog n (1 : R) = n
 /-
 The q-factorial of n, denoted [n]_q!, is the product [1]_q * [2]_q * ... * [n]_q.
 -/
-def q_factorial {R : Type*} [Semiring R] (n : ℕ) (q : R) : R :=
-  match n with
-  | 0     => 1
-  | n + 1 => q_factorial n q * q_analog (n + 1) q
+def q_factorial {R : Type*} [Semiring R] : ℕ → R → R
+  | 0, _     => 1
+  | n + 1, q => q_factorial n q * q_analog (n + 1) q
 
 @[simp]
 theorem q_factorial_zero {R : Type*} [Semiring R] (q : R) : q_factorial 0 q = 1 := by
