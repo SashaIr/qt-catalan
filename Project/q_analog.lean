@@ -81,9 +81,9 @@ theorem q_pascal {R : Type*} [Semiring R] (n k : ℕ) (q : R):
     q_binomial (n + 1) (k + 1) q = q_binomial n k q + q ^ (k + 1) * q_binomial n (k + 1) q := by
   rfl
 
-theorem sum_inv_eq_q_binomial {R : Type*} [Semiring R] (n k : ℕ) (q : R) (hq : q ≠ 0) :
-    ∑ (S : Finset (Fin n)) with (fun S => S.card = k) S,
-      q ^ inv S = q_binomial n k q := by
+theorem sum_inv_eq_q_binomial {R : Type*} [Semiring R] (n k : ℕ) (q : R) :
+    ∑ (s : Finset (Fin n)) with (fun s => s.card = k) s,
+      q ^ inv s = q_binomial n k q := by
   induction' n with n ih generalizing k
   · simp only [Finset.univ_unique]
     have : @default (Finset (Fin 0)) _ = ∅ := by rfl
@@ -94,32 +94,30 @@ theorem sum_inv_eq_q_binomial {R : Type*} [Semiring R] (n k : ℕ) (q : R) (hq :
     · simp only [Finset.card_eq_zero, Finset.sum_filter, Finset.sum_ite_eq', Finset.mem_univ,
       ↓reduceIte, inv_empty, pow_zero]
       rw [q_binomial]
-    · rw [← Finset.sum_filter_add_sum_filter_not _ (fun S ↦ ⟨n, by linarith⟩ ∈ S) _]
+    · rw [← Finset.sum_filter_add_sum_filter_not _ (fun s ↦ ⟨n, by linarith⟩ ∈ s) _]
       rw [q_pascal n k q]
       congr
-      ·
-        classical
-        -- subsets containing `last` correspond to subsets of `Fin n`
+      · -- subsets containing `last` correspond to subsets of `Fin n`
         let last : Fin (n + 1) := Fin.last n
-        let s : Finset (Finset (Fin n)) :=
-          Finset.univ.filter fun S : Finset (Fin n) => S.card = k
-        let t : Finset (Finset (Fin (n + 1))) :=
-          (Finset.univ.filter fun T : Finset (Fin (n + 1)) => T.card = k + 1).filter
-            fun T => last ∈ T
+        let S : Finset (Finset (Fin n)) :=
+          Finset.univ.filter fun s : Finset (Fin n) => s.card = k
+        let T : Finset (Finset (Fin (n + 1))) :=
+          (Finset.univ.filter fun t : Finset (Fin (n + 1)) => t.card = k + 1).filter
+            fun t => last ∈ t
         have h_bij :
-            ∑ S ∈ s, q ^ inv S = ∑ T ∈ t, q ^ inv T := by
-          refine Finset.sum_bij (s := s) (t := t)
-            (i := fun S _ => insert last (Finset.liftToSucc S))
+            ∑ s ∈ S, q ^ inv s = ∑ t ∈ T, q ^ inv t := by
+          refine Finset.sum_bij (s := S) (t := T)
+            (i := fun s _ => insert last (Finset.liftToSucc s))
             ?h_mem ?h_inj ?h_surj ?h_weights
-          · intro S hS
-            rcases Finset.mem_filter.mp hS with ⟨-, hcard⟩
-            have hnot : last ∉ Finset.liftToSucc S :=
-              Finset.last_not_mem_liftToSucc (S := S)
-            have hcard' : (insert last (Finset.liftToSucc S)).card = k + 1 := by
-              have hcard_lift : (Finset.liftToSucc S).card = k := by
+          · intro s hs
+            rcases Finset.mem_filter.mp hs with ⟨-, hcard⟩
+            have hnot : last ∉ Finset.liftToSucc s :=
+              Finset.last_not_mem_liftToSucc (S := s)
+            have hcard' : (insert last (Finset.liftToSucc s)).card = k + 1 := by
+              have hcard_lift : (Finset.liftToSucc s).card = k := by
                 simpa [Finset.card_liftToSucc] using hcard
               have hcard_insert :=
-                Finset.card_insert_of_not_mem (s := Finset.liftToSucc S) (a := last) hnot
+                Finset.card_insert_of_notMem (s := Finset.liftToSucc s) (a := last) hnot
               simpa [hcard_lift, Nat.add_comm] using hcard_insert
             refine Finset.mem_filter.mpr ?_
             constructor
@@ -128,31 +126,31 @@ theorem sum_inv_eq_q_binomial {R : Type*} [Semiring R] (n k : ℕ) (q : R) (hq :
               · simp
               · exact hcard'
             · simp
-          · intro S₁ h₁ S₂ h₂ hEq
+          · intro s₁ h₁ s₂ h₂ hEq
             apply Finset.ext
             intro i
             constructor <;> intro hi
-            · have hi' : i.castSucc ∈ insert last (Finset.liftToSucc S₁) := by
+            · have hi' : i.castSucc ∈ insert last (Finset.liftToSucc s₁) := by
                 simp [hi]
-              have hi'' : i.castSucc ∈ insert last (Finset.liftToSucc S₂) := by
+              have hi'' : i.castSucc ∈ insert last (Finset.liftToSucc s₂) := by
                 simpa [hEq] using hi'
               have hneq : i.castSucc ≠ last := Fin.castSucc_ne_last i
-              have hi''' : i.castSucc ∈ Finset.liftToSucc S₂ := by
+              have hi''' : i.castSucc ∈ Finset.liftToSucc s₂ := by
                 simpa [hneq] using hi''
               simpa [Finset.mem_liftToSucc] using hi'''
-            · have hi' : i.castSucc ∈ insert last (Finset.liftToSucc S₂) := by
+            · have hi' : i.castSucc ∈ insert last (Finset.liftToSucc s₂) := by
                 simp [hi]
-              have hi'' : i.castSucc ∈ insert last (Finset.liftToSucc S₁) := by
+              have hi'' : i.castSucc ∈ insert last (Finset.liftToSucc s₁) := by
                 simpa [hEq] using hi'
               have hneq : i.castSucc ≠ last := Fin.castSucc_ne_last i
-              have hi''' : i.castSucc ∈ Finset.liftToSucc S₁ := by
+              have hi''' : i.castSucc ∈ Finset.liftToSucc s₁ := by
                 simpa [hneq] using hi''
               simpa [Finset.mem_liftToSucc] using hi'''
-          · intro T hT
-            rcases Finset.mem_filter.mp hT with ⟨hTcard, hLast⟩
+          · intro t ht
+            rcases Finset.mem_filter.mp ht with ⟨hTcard, hLast⟩
             rcases Finset.mem_filter.mp hTcard with ⟨-, hcardT⟩
-            let S : Finset (Fin n) := Finset.univ.filter fun i : Fin n => i.castSucc ∈ T
-            have hLift : Finset.liftToSucc S = T.erase last := by
+            let S : Finset (Fin n) := Finset.univ.filter fun i : Fin n => i.castSucc ∈ t
+            have hLift : Finset.liftToSucc S = t.erase last := by
               ext j
               rcases Fin.eq_castSucc_or_eq_last j with ⟨i, rfl⟩ | hlast
               · constructor
@@ -169,16 +167,16 @@ theorem sum_inv_eq_q_binomial {R : Type*} [Semiring R] (n k : ℕ) (q : R) (hq :
                   · exact hjT
               · constructor <;> intro hj
                 · have hnot := Finset.last_not_mem_liftToSucc (S := S)
-                  exact (hnot (by simpa [hlast] using hj)).elim
+                  exact (hnot (by simp [hlast] at hj)).elim
                 · rcases Finset.mem_erase.mp hj with ⟨hneq, hjT⟩
                   exact (hneq hlast).elim
-            have hcard_erase : (T.erase last).card = k := by
+            have hcard_erase : (t.erase last).card = k := by
               have hcardErase_succ :
-                  (T.erase last).card + 1 = k + 1 := by
+                  (t.erase last).card + 1 = k + 1 := by
                 simpa [hcardT] using
-                  (Finset.card_erase_add_one (s := T) (a := last) hLast)
+                  (Finset.card_erase_add_one (s := t) (a := last) hLast)
               have hcardErase_succ' :
-                  (T.erase last).card.succ = k.succ := by
+                  (t.erase last).card.succ = k.succ := by
                 simpa [Nat.succ_eq_add_one] using hcardErase_succ
               exact Nat.succ.inj hcardErase_succ'
             have hcardS : S.card = k := by
@@ -188,113 +186,111 @@ theorem sum_inv_eq_q_binomial {R : Type*} [Semiring R] (n k : ℕ) (q : R) (hq :
             refine ⟨S, Finset.mem_filter.mpr ⟨by simp, hcardS⟩, ?_⟩
             calc
               insert last (Finset.liftToSucc S)
-                  = insert last (T.erase last) := by simpa [hLift]
-              _ = T := Finset.insert_erase hLast
+                  = insert last (t.erase last) := by simp [hLift]
+              _ = t := Finset.insert_erase hLast
           · intro S hS
             simp [Finset.inv_insert_last_lift, last]
-        have h_eq : ∑ T ∈ t, q ^ inv T = ∑ S ∈ s, q ^ inv S := h_bij.symm
-        have hih : ∑ S ∈ s, q ^ inv S = q_binomial n k q := by
-          simpa [s] using ih k
-        have hsum : ∑ T ∈ t, q ^ inv T = q_binomial n k q := by
+        have h_eq : ∑ t ∈ T, q ^ inv t = ∑ s ∈ S, q ^ inv s := h_bij.symm
+        have hih : ∑ s ∈ S, q ^ inv s = q_binomial n k q := by
+          simpa [S] using ih k
+        have hsum : ∑ t ∈ T, q ^ inv t = q_binomial n k q := by
           simpa [hih] using h_eq
         -- match the original filtered sum
-        simpa [t, s] using hsum
-      ·
-        classical
-        -- subsets avoiding `last` correspond to subsets of `Fin n`
+        simpa [T, S] using hsum
+      · -- subsets avoiding `last` correspond to subsets of `Fin n`
         let last : Fin (n + 1) := Fin.last n
-        let s : Finset (Finset (Fin n)) :=
-          Finset.univ.filter fun S : Finset (Fin n) => S.card = k + 1
-        let t : Finset (Finset (Fin (n + 1))) :=
+        let S : Finset (Finset (Fin n)) :=
+          Finset.univ.filter fun s : Finset (Fin n) => s.card = k + 1
+        let T : Finset (Finset (Fin (n + 1))) :=
           (Finset.univ.filter fun T : Finset (Fin (n + 1)) => T.card = k + 1).filter
             fun T => last ∉ T
         have h_bij :
-            ∑ S ∈ s, q ^ (inv S + S.card) = ∑ T ∈ t, q ^ inv T := by
-          refine Finset.sum_bij (s := s) (t := t)
-            (i := fun S _ => Finset.liftToSucc S)
+            ∑ s ∈ S, q ^ (inv s + s.card) = ∑ t ∈ T, q ^ inv t := by
+          refine Finset.sum_bij (s := S) (t := T)
+            (i := fun s _ => Finset.liftToSucc s)
             ?h_mem' ?h_inj' ?h_surj' ?h_weights'
-          · intro S hS
-            rcases Finset.mem_filter.mp hS with ⟨-, hcard⟩
-            have hcard' : (Finset.liftToSucc S).card = k + 1 := by
-              simpa [Finset.card_liftToSucc, hcard]
-            have hnot : last ∉ Finset.liftToSucc S := by
-              simpa [last] using (Finset.last_not_mem_liftToSucc (S := S))
+          · intro s hs
+            rcases Finset.mem_filter.mp hs with ⟨-, hcard⟩
+            have hcard' : (Finset.liftToSucc s).card = k + 1 := by
+              simp [Finset.card_liftToSucc, hcard]
+            have hnot : last ∉ Finset.liftToSucc s := by
+              simp [last]
             refine Finset.mem_filter.mpr ?_
             constructor
             · refine Finset.mem_filter.mpr ?_
               exact ⟨by simp, hcard'⟩
             · exact hnot
-          · intro S₁ h₁ S₂ h₂ hEq
+          · intro s₁ h₁ s₂ h₂ hEq
             apply Finset.ext
             intro i
             constructor <;> intro hi
-            · have hi' : i.castSucc ∈ Finset.liftToSucc S₁ := by
+            · have hi' : i.castSucc ∈ Finset.liftToSucc s₁ := by
                 simpa [Finset.mem_liftToSucc] using hi
-              have hi'' : i.castSucc ∈ Finset.liftToSucc S₂ := by simpa [hEq] using hi'
+              have hi'' : i.castSucc ∈ Finset.liftToSucc s₂ := by simpa [hEq] using hi'
               simpa [Finset.mem_liftToSucc] using hi''
-            · have hi' : i.castSucc ∈ Finset.liftToSucc S₂ := by
+            · have hi' : i.castSucc ∈ Finset.liftToSucc s₂ := by
                 simpa [Finset.mem_liftToSucc] using hi
-              have hi'' : i.castSucc ∈ Finset.liftToSucc S₁ := by simpa [hEq] using hi'
+              have hi'' : i.castSucc ∈ Finset.liftToSucc s₁ := by simpa [hEq] using hi'
               simpa [Finset.mem_liftToSucc] using hi''
-          · intro T hT
-            rcases Finset.mem_filter.mp hT with ⟨hTcard, hnotLast⟩
+          · intro t ht
+            rcases Finset.mem_filter.mp ht with ⟨hTcard, hnotLast⟩
             rcases Finset.mem_filter.mp hTcard with ⟨-, hcardT⟩
-            let S : Finset (Fin n) := Finset.univ.filter fun i : Fin n => i.castSucc ∈ T
-            have hLift : Finset.liftToSucc S = T := by
+            let s : Finset (Fin n) := Finset.univ.filter fun i : Fin n => i.castSucc ∈ t
+            have hLift : Finset.liftToSucc s = t := by
               ext j
               rcases Fin.eq_castSucc_or_eq_last j with ⟨i, rfl⟩ | hlast
               · constructor
                 · intro hj
-                  have hi : i ∈ S := Finset.mem_liftToSucc.mp hj
+                  have hi : i ∈ s := Finset.mem_liftToSucc.mp hj
                   exact (Finset.mem_filter.mp hi).2
                 · intro hj
-                  have hi : i ∈ S := by
+                  have hi : i ∈ s := by
                     refine Finset.mem_filter.mpr ?_
                     exact ⟨by simp, hj⟩
                   exact Finset.mem_liftToSucc.mpr hi
               · constructor <;> intro hj
-                · have hnot := Finset.last_not_mem_liftToSucc (S := S)
-                  exact (hnot (by simpa [hlast] using hj)).elim
+                · have hnot := Finset.last_not_mem_liftToSucc (S := s)
+                  exact (hnot (by simp [hlast] at hj)).elim
                 · exact (hnotLast (by simpa [hlast] using hj)).elim
-            have hcardS : S.card = k + 1 := by
+            have hcardS : s.card = k + 1 := by
               calc
-                S.card = (Finset.liftToSucc S).card := (Finset.card_liftToSucc S).symm
-                _ = T.card := by simpa [hLift]
+                s.card = (Finset.liftToSucc s).card := (Finset.card_liftToSucc s).symm
+                _ = t.card := by simp [hLift]
                 _ = k + 1 := hcardT
-            refine ⟨S, Finset.mem_filter.mpr ⟨by simp, hcardS⟩, by simpa [hLift]⟩
-          · intro S hS
-            rcases Finset.mem_filter.mp hS with ⟨-, hcard⟩
-            simp [Finset.inv_liftToSucc, hcard, pow_add, mul_comm, mul_left_comm, mul_assoc]
-        have h_eq : ∑ T ∈ t, q ^ inv T = ∑ S ∈ s, q ^ (inv S + S.card) := h_bij.symm
+            refine ⟨s, Finset.mem_filter.mpr ⟨by simp, hcardS⟩, by simp [hLift]⟩
+          · intro s hs
+            rcases Finset.mem_filter.mp hs with ⟨-, hcard⟩
+            simp [Finset.inv_liftToSucc, hcard, pow_add]
+        have h_eq : ∑ t ∈ T, q ^ inv t = ∑ s ∈ S, q ^ (inv s + s.card) := h_bij.symm
         have h_expand :
-            ∑ S ∈ s, q ^ (inv S + S.card)
-              = ∑ S ∈ s, q ^ (k + 1) * q ^ inv S := by
+            ∑ s ∈ S, q ^ (inv s + s.card)
+              = ∑ s ∈ S, q ^ (k + 1) * q ^ inv s := by
           refine Finset.sum_congr rfl ?_
-          intro S hS
-          have hcard : S.card = k + 1 := (Finset.mem_filter.mp hS).2
+          intro s hs
+          have hcard : s.card = k + 1 := (Finset.mem_filter.mp hs).2
           calc
-            q ^ (inv S + S.card)
-                = q ^ (inv S + (k + 1)) := by simp [hcard]
-            _ = q ^ (k + 1 + inv S) := by
-              have : inv S + (k + 1) = k + 1 + inv S := by
+            q ^ (inv s + s.card)
+                = q ^ (inv s + (k + 1)) := by simp [hcard]
+            _ = q ^ (k + 1 + inv s) := by
+              have : inv s + (k + 1) = k + 1 + inv s := by
                 ac_rfl
-              simpa [this]
-            _ = q ^ (k + 1) * q ^ inv S := pow_add q (k + 1) (inv S)
+              simp [this]
+            _ = q ^ (k + 1) * q ^ inv s := pow_add q (k + 1) (inv s)
         have h_factor :
-            ∑ S ∈ s, q ^ (k + 1) * q ^ inv S
-              = q ^ (k + 1) * ∑ S ∈ s, q ^ inv S := by
+            ∑ s ∈ S, q ^ (k + 1) * q ^ inv s
+              = q ^ (k + 1) * ∑ s ∈ S, q ^ inv s := by
           classical
           simpa using
-            (Finset.mul_sum (s := s) (f := fun S => q ^ inv S) (a := q ^ (k + 1))).symm
-        have hih : ∑ S ∈ s, q ^ inv S = q_binomial n (k + 1) q := by
-          simpa [s] using ih (k + 1)
+            (Finset.mul_sum (s := S) (f := fun s => q ^ inv s) (a := q ^ (k + 1))).symm
+        have hih : ∑ s ∈ S, q ^ inv s = q_binomial n (k + 1) q := by
+          simpa [S] using ih (k + 1)
         have hsum :
-            ∑ T ∈ t, q ^ inv T = q ^ (k + 1) * q_binomial n (k + 1) q := by
+            ∑ t ∈ T, q ^ inv t = q ^ (k + 1) * q_binomial n (k + 1) q := by
           calc
-            ∑ T ∈ t, q ^ inv T
-                = ∑ S ∈ s, q ^ (inv S + S.card) := h_eq
-            _ = ∑ S ∈ s, q ^ (k + 1) * q ^ inv S := h_expand
-            _ = q ^ (k + 1) * ∑ S ∈ s, q ^ inv S := h_factor
-            _ = q ^ (k + 1) * q_binomial n (k + 1) q := by simpa [hih]
+            ∑ t ∈ T, q ^ inv t
+                = ∑ s ∈ S, q ^ (inv s + s.card) := h_eq
+            _ = ∑ s ∈ S, q ^ (k + 1) * q ^ inv s := h_expand
+            _ = q ^ (k + 1) * ∑ s ∈ S, q ^ inv s := h_factor
+            _ = q ^ (k + 1) * q_binomial n (k + 1) q := by simp [hih]
         -- match the original filtered sum
-        simpa [t, s] using hsum
+        simpa [T, S] using hsum

@@ -35,20 +35,18 @@ def liftToSucc (S : Finset (Fin n)) : Finset (Fin (n + 1)) :=
   S.map Fin.castSuccEmb
 
 @[simp] lemma card_liftToSucc (S : Finset (Fin n)) : (liftToSucc S).card = S.card := by
-  classical
-  simpa [liftToSucc] using card_map (Fin.castSuccEmb) S
+  simp [liftToSucc]
 
 @[simp] lemma mem_liftToSucc {S : Finset (Fin n)} {x : Fin n} :
     x.castSucc ∈ liftToSucc S ↔ x ∈ S := by
-  classical
-  simpa [liftToSucc] using (Finset.mem_map' (f := Fin.castSuccEmb) (s := S) (a := x))
+  simp [liftToSucc]
 
 @[simp] lemma last_not_mem_liftToSucc (S : Finset (Fin n)) :
     Fin.last n ∉ liftToSucc S := by
   classical
   intro h
   have h' : Fin.last n ∈ S.map Fin.castSuccEmb := by
-    simpa [liftToSucc] using h
+    simp [liftToSucc] at h
   rcases mem_map.mp h' with ⟨x, _, hx⟩
   have hxval : (x : ℕ) = n := by
     have := congrArg Fin.val hx
@@ -128,9 +126,9 @@ def liftToSucc (S : Finset (Fin n)) : Finset (Fin (n + 1)) :=
             simpa using
               (Finset.card_erase_add_one (s := Finset.univ.filter p) (a := Fin.last n) hlast).symm
       _ = ((Finset.univ.filter q).map Fin.castSuccEmb).card + 1 := by
-        simpa [p, q, h_erase]
+        simp [p, q, h_erase]
       _ = (Finset.univ.filter (fun j : Fin n => j > i ∧ j ∉ S)).card + 1 := by
-        simpa [q] using (Finset.card_map (Fin.castSuccEmb) (Finset.univ.filter q))
+        simp [q]
   -- assemble the final sum
   calc
     ∑ i ∈ liftToSucc S,
@@ -140,7 +138,7 @@ def liftToSucc (S : Finset (Fin n)) : Finset (Fin (n + 1)) :=
         ∑ i ∈ S.image Fin.castSucc,
           (Finset.univ.filter
             (fun j : Fin (n + 1) => j > i ∧ j ∉ liftToSucc S)).card := by
-      simpa [h_image]
+      simp [h_image]
     _ = ∑ i ∈ S,
           (Finset.univ.filter
           (fun j : Fin (n + 1) => j > i.castSucc ∧ j ∉ liftToSucc S)).card := h_sum
@@ -155,7 +153,7 @@ def liftToSucc (S : Finset (Fin n)) : Finset (Fin (n + 1)) :=
     _ = ∑ i ∈ S, (Finset.univ.filter (fun j : Fin n => j > i ∧ j ∉ S)).card
           + S.card := by
       have hconst : ∀ i ∈ S, (1 : ℕ) = 1 := by intros; rfl
-      simpa using (Finset.sum_const_nat (s := S) (f := fun _ => (1 : ℕ)) (m := 1) hconst)
+      simp
     _ = inv S + S.card := by
       simp [inv, Finset.finInv]
 
@@ -174,7 +172,7 @@ contributed, so the inversion statistic returns to `inv S`. -/
     have hne : i ≠ Fin.last n := by
       intro h
       apply hnot
-      simpa [T, h] using hi
+      simp [T, h] at hi
     have hlt : i < Fin.last n := lt_of_le_of_ne (Fin.le_last _) hne
     let p : Fin (n + 1) → Prop := fun j => j > i ∧ j ∉ T
     let q : Fin (n + 1) → Prop := fun j => j > i ∧ j ∉ insert (Fin.last n) T
@@ -213,7 +211,7 @@ contributed, so the inversion statistic returns to `inv S`. -/
           = ((Finset.univ.filter p).erase (Fin.last n)).card + 1 := by
             simpa using hcard.symm
       _ = (Finset.univ.filter fun j : Fin (n + 1) => j > i ∧ j ∉ insert (Fin.last n) T).card + 1 := by
-        simpa [p, q, h_erase]
+        simp [p, q, h_erase]
   -- sum the elementwise comparison
   have hsum :
       ∑ i ∈ T, (Finset.univ.filter fun j : Fin (n + 1) => j > i ∧ j ∉ T).card
@@ -245,7 +243,7 @@ contributed, so the inversion statistic returns to `inv S`. -/
     have hlast_zero :
         (Finset.univ.filter fun j : Fin (n + 1) => j > Fin.last n ∧ j ∉ insert (Fin.last n) T).card = 0 := by
       refine Finset.card_eq_zero.mpr ?_
-      refine Finset.eq_empty_iff_forall_not_mem.mpr ?_
+      refine Finset.eq_empty_iff_forall_notMem.mpr ?_
       intro x hx
       rcases Finset.mem_filter.mp hx with ⟨_, hx⟩
       exact (not_lt_of_ge (Fin.le_last x) hx.1).elim
@@ -282,7 +280,7 @@ contributed, so the inversion statistic returns to `inv S`. -/
               (Finset.univ.filter fun j : Fin (n + 1) => j > i ∧ j ∉ insert (Fin.last n) T).card
             + T.card := hsum
       _ = inv (insert (Fin.last n) T) + T.card := by
-        simpa [h_inv_insert]
+        simp [h_inv_insert]
   -- use the previous lemma to translate back to `S`
   have hcard_T : T.card = S.card := card_liftToSucc S
   have hinv_T : inv T = inv S + S.card := inv_liftToSucc S
@@ -291,9 +289,9 @@ contributed, so the inversion statistic returns to `inv S`. -/
     calc
       inv (insert (Fin.last n) (liftToSucc S)) + S.card
           = inv (insert (Fin.last n) T) + T.card := by
-              simpa [T, hcard_T]
+              simp [T, hcard_T]
       _ = inv T := hrel.symm
-      _ = inv S + S.card := by simpa [T, hcard_T] using hinv_T
+      _ = inv S + S.card := hinv_T
   exact Nat.add_right_cancel hrewrite
 
 end Finset

@@ -1,5 +1,6 @@
 import Mathlib.Combinatorics.Enumerative.DyckWord
 import Mathlib.Data.Multiset.Basic
+import Project.q_analog
 
 namespace DyckWord
 
@@ -126,6 +127,25 @@ theorem qtCatalan_eq_qtCatalanAlt (n : ℕ) (R : Type*) [CommSemiring R] (q t : 
 /-- Symmetry of the `q,t`-Catalan polynomial in `q` and `t`. -/
 theorem qtCatalan_symmetric (n : ℕ) (R : Type*) [CommSemiring R] (q t : R) :
     qtCatalan n R q t = qtCatalan n R t q := by
+  sorry
+
+/-- Recursive formula for the qtCatalan polynomial. -/
+def qtCatalanRefined (n r : ℕ) (R : Type*) [CommSemiring R] (q t : R) : R :=
+  ∑ w : {p : DyckWord // p.semilength = n} with (areaWord w.1).count 0 = r,
+    q ^ w.1.dinv * t ^ w.1.area
+
+theorem qtCatalanRefined_sum (n : ℕ) (R : Type*) [CommSemiring R] (q t : R) :
+    qtCatalan n R q t = ∑ r ∈ Finset.range (n + 1), qtCatalanRefined n r R q t := by
+  simp_rw [qtCatalan, qtCatalanRefined]
+  sorry
+
+theorem qtCatalanRefined_recursion (n r : ℕ) (h : r ≤ n) (R : Type*) [CommSemiring R] (q t : R) :
+    qtCatalanRefined n r R q t = match n with
+    | 0 => if r = 0 then 1 else 0
+    | n + 1 =>
+      t ^ (n + 1 - r) * ∑ s ∈ Finset.range (n + 1 - r), q_binomial (r + s - 1) s q
+        * qtCatalanRefined (n + 1 - r) s R q t
+    := by
   sorry
 
 end DyckWord
